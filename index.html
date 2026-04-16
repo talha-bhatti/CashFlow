@@ -487,6 +487,43 @@
     .ms-pill .ms-l { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 4px; }
     .ms-pill .ms-v { font-family: var(--mono); font-size: 12px; font-weight: 700; }
 
+    /* ── Data safety banner ── */
+    .dsafe-banner {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 400;
+      background: rgba(6, 13, 9, 0.97);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(52, 211, 153, 0.2);
+      padding: 20px 20px 18px;
+      animation: slideDown 0.4s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+    body.light .dsafe-banner {
+      background: rgba(240, 247, 243, 0.97);
+      border-bottom-color: rgba(5, 150, 105, 0.2);
+    }
+    @keyframes slideDown { from{transform:translateY(-100%);opacity:0} to{transform:translateY(0);opacity:1} }
+    .dsafe-inner { max-width: 460px; margin: 0 auto; }
+    .dsafe-top { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+    .dsafe-icon { font-size: 26px; flex-shrink: 0; margin-top: 2px; }
+    .dsafe-text { flex: 1; }
+    .dsafe-text strong { display: block; font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 5px; }
+    .dsafe-text p { font-size: 12px; color: var(--text-sub); line-height: 1.65; }
+    .dsafe-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .dsafe-ok {
+      flex: 1; padding: 12px 16px; background: var(--accent); color: #060d09;
+      border: none; border-radius: var(--r-sm); font-family: var(--font);
+      font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity 0.2s;
+    }
+    .dsafe-ok:active { opacity: 0.85; }
+    .dsafe-export {
+      padding: 12px 16px; background: var(--glass);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border); border-radius: var(--r-sm);
+      color: var(--text-sub); font-family: var(--font);
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .dsafe-export:active { border-color: var(--accent); color: var(--accent); }
+
     /* ── Bottom nav ── */
     .bnav {
       position: fixed; bottom: 0; left: 0; right: 0;
@@ -991,6 +1028,36 @@
     };
 
     render();
+
+    // ── Data safety banner (shown once ever) ──
+    const SAFE_KEY = 'cashflow_safe_seen';
+    function showSafeBanner() {
+      if (localStorage.getItem(SAFE_KEY)) return;
+      const b = document.createElement('div');
+      b.className = 'dsafe-banner';
+      b.innerHTML = `
+        <div class="dsafe-inner">
+          <div class="dsafe-top">
+            <div class="dsafe-icon">🔒</div>
+            <div class="dsafe-text">
+              <strong>Your data lives in this browser</strong>
+              <p>CashFlow stores everything locally on your device. <b>Clearing your browser cache, site data, or browser history can permanently delete all your transactions.</b> To keep your data safe, back it up regularly using Export JSON in Settings.</p>
+            </div>
+          </div>
+          <div class="dsafe-actions">
+            <button class="dsafe-export" onclick="exJ();dismissSafe()">📦 Export backup now</button>
+            <button class="dsafe-ok" onclick="dismissSafe()">Got it, understood</button>
+          </div>
+        </div>`;
+      document.body.appendChild(b);
+    }
+    window.dismissSafe = () => {
+      localStorage.setItem(SAFE_KEY, '1');
+      const b = document.querySelector('.dsafe-banner');
+      if (b) { b.style.transition = 'opacity 0.3s, transform 0.3s'; b.style.opacity = '0'; b.style.transform = 'translateY(-100%)'; setTimeout(() => b.remove(), 320); }
+    };
+    // Small delay so the app renders first
+    setTimeout(showSafeBanner, 800);
 
     // Check PIN on boot
     if(AP.pin){
