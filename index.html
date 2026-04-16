@@ -487,6 +487,70 @@
     .ms-pill .ms-l { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 4px; }
     .ms-pill .ms-v { font-family: var(--mono); font-size: 12px; font-weight: 700; }
 
+    /* ── Categories manager ── */
+    .cat-mgr-row {
+      display: flex; align-items: center; gap: 12px; padding: 12px 0;
+      border-bottom: 1px solid rgba(52,211,153,0.06);
+    }
+    .cat-mgr-row:last-child { border-bottom: none; }
+    .cat-emoji-btn {
+      width: 40px; height: 40px; border-radius: 12px; font-size: 20px;
+      background: var(--accent-dim); border: 1px solid var(--glass-border);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; flex-shrink: 0;
+    }
+    .cat-emoji-btn:active { transform: scale(0.9); border-color: var(--accent); }
+    .cat-name-inp {
+      flex: 1; padding: 10px 14px;
+      background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--r-sm);
+      color: var(--text); font-family: var(--font); font-size: 14px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .cat-name-inp:focus { border-color: rgba(52,211,153,0.35); }
+    .cat-del-btn {
+      width: 32px; height: 32px; border-radius: 8px; border: none;
+      background: var(--red-dim); color: var(--red); font-size: 16px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: background 0.15s;
+    }
+    .cat-del-btn:active { background: rgba(251,113,133,0.25); }
+    .cat-add-row {
+      display: flex; align-items: center; gap: 10px; margin-top: 14px;
+    }
+    .cat-save-btn {
+      padding: 12px 20px; background: var(--accent); color: var(--bg);
+      border: none; border-radius: var(--r-sm); font-family: var(--font);
+      font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+    .cat-save-btn:active { opacity: 0.8; }
+    .cat-locked { font-size: 10px; color: var(--text-muted); padding: 2px 8px; background: rgba(255,255,255,0.05); border-radius: 6px; }
+
+    /* ── Emoji picker modal ── */
+    .emoji-modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      display: flex; align-items: flex-end; justify-content: center;
+      z-index: 200; padding: 0; animation: fi 0.2s ease;
+    }
+    .emoji-sheet {
+      width: 100%; max-width: 460px;
+      background: var(--glass-strong); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+      border: 1px solid var(--glass-border); border-radius: var(--r) var(--r) 0 0;
+      padding: 20px 16px 32px; max-height: 70vh; overflow-y: auto;
+      animation: slideUp2 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    @keyframes slideUp2 { from{transform:translateY(100%)} to{transform:translateY(0)} }
+    .emoji-sheet h4 { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+    .emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+    .emoji-opt {
+      height: 44px; border-radius: 10px; font-size: 22px;
+      background: var(--glass); border: 1px solid var(--glass-border);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .emoji-opt:active { background: var(--accent-dim); border-color: var(--accent); transform: scale(0.9); }
+
     /* ── Data safety banner ── */
     .dsafe-banner {
       position: fixed; top: 0; left: 0; right: 0; z-index: 400;
@@ -582,17 +646,36 @@
 
     let S={...ld(),view:'home',txType:'expense',so:false,sq:'',
       form:{title:'',amount:'',category:'',customCat:'',description:'',date:'',time:''},
-      tso:false,cso:false,openMonths:{}};
+      tso:false,cso:false,openMonths:{},editingId:null};
 
-    const DC=['Food & Dining','Transport','Bills & Utilities','Shopping'];
-    const CI={'Food & Dining':'🍽','Transport':'🚗','Bills & Utilities':'📄','Shopping':'🛍'};
-    function ic(c,t){return t==='income'?'💰':(CI[c]||'📌');}
+    // Default categories as objects with emoji
+    const DC_OBJ=[
+      {name:'Food & Dining',emoji:'🍽'},
+      {name:'Transport',emoji:'🚗'},
+      {name:'Bills & Utilities',emoji:'📄'},
+      {name:'Shopping',emoji:'🛍'}
+    ];
+    // Legacy flat array kept for backward compat — always derive from DC_OBJ
+    const DC=DC_OBJ.map(c=>c.name);
+    // Convert old flat customCategories strings to objects on load
+    if(S.customCategories.length && typeof S.customCategories[0]==='string'){
+      S.customCategories=S.customCategories.map(n=>({name:n,emoji:'📌'}));
+    }
+    // All categories combined as objects
+    function allCats(){return[...DC_OBJ,...S.customCategories];}
+    // Get emoji for a category name
+    function catEmoji(name,type){
+      if(type==='income') return '💰';
+      const found=allCats().find(c=>c.name===name);
+      return found?found.emoji:'📌';
+    }
     function fc(n){return new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(n);}
     function fd(d){return new Date(d).toLocaleDateString('de-DE',{day:'2-digit',month:'short',year:'numeric'});}
     function ft(d){return new Date(d).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});}
     function sg(f,q){if(!q||q.length<1)return[];const lo=q.toLowerCase(),fr={};S.transactions.forEach(t=>{const v=f==='title'?t.title:t.category;if(v&&v.toLowerCase().includes(lo))fr[v]=(fr[v]||0)+1;});return Object.entries(fr).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([v,c])=>({v,c}));}
     function nw(){const d=new Date(),p=n=>String(n).padStart(2,'0');return{date:`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`,time:`${p(d.getHours())}:${p(d.getMinutes())}`};}
     function es(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+    function svAll(){sv({transactions:S.transactions,customCategories:S.customCategories});}
 
     const searchSvg=`<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>`;
     const gearSvg=`<svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>`;
@@ -605,9 +688,10 @@
       document.getElementById('bn-set').classList.toggle('active',v==='settings');
     }
     function render(){
-      if(S.view==='add'){bnav.style.display='none';renderAdd();}
+      if(S.view==='add'||S.view==='edit'){bnav.style.display='none';renderAdd();}
       else if(S.view==='history'){setNav('history');renderHist();}
       else if(S.view==='settings'){setNav('settings');renderSet();}
+      else if(S.view==='categories'){bnav.style.display='none';renderCats();}
       else{setNav('home');renderHome();}
     }
 
@@ -662,7 +746,7 @@
             const pct=Math.round((amt/maxCat)*100);
             const catColor=cat==='Income'?'var(--accent)':'rgba(251,113,133,0.7)';
             return `<div class="mcat-row">
-              <div class="mcat-icon">${ic(cat,'expense')}</div>
+              <div class="mcat-icon">${catEmoji(cat,'expense')}</div>
               <div class="mcat-info">
                 <div style="display:flex;justify-content:space-between;align-items:center">
                   <span class="mcat-name">${es(cat)}</span>
@@ -678,7 +762,7 @@
           const txRows=mTxs.map(t=>{
             const ii=t.type==='income';
             return `<div class="mtx">
-              <div class="mtx-icon ${ii?'ig':'ir'}">${ic(t.category,t.type)}</div>
+              <div class="mtx-icon ${ii?'ig':'ir'}">${catEmoji(t.category,t.type)}</div>
               <div class="mtx-info">
                 <div class="mtx-title">${es(t.title)}</div>
                 <div class="mtx-meta">${ft(t.date)} · ${es(t.category)}</div>
@@ -740,7 +824,7 @@
       let h='';
       if(!sorted.length){h=`<div class="es"><div class="ei">💸</div>${q?'No results found':'No transactions yet.<br>Tap ＋ to get started.'}</div>`;}
       else sorted.forEach(([dk,its])=>{its.sort((a,b)=>new Date(b.date)-new Date(a.date));
-        let cards=its.map(t=>{const ii=t.type==='income';return`<div class="glass tc"><div class="tt"><div class="tl"><div class="ti2 ${ii?'ig':'ir'}">${ic(t.category,t.type)}</div><div class="tif"><div class="tit">${es(t.title)}</div><div class="tm"><span class="tb">${es(t.category)}</span><span class="ttime">${fd(t.date)} · ${ft(t.date)}</span></div></div></div><div class="tr2"><div class="tam ${ii?'g':'r'}">${ii?'+':'−'}${fc(Math.abs(t.amount))}</div><button class="td" onclick="del('${t.id}')">remove</button></div></div>${t.description?`<div class="tde">${es(t.description)}</div>`:''}</div>`;}).join('');
+        let cards=its.map(t=>{const ii=t.type==='income';return`<div class="glass tc"><div class="tt"><div class="tl"><div class="ti2 ${ii?'ig':'ir'}">${catEmoji(t.category,t.type)}</div><div class="tif"><div class="tit">${es(t.title)}</div><div class="tm"><span class="tb">${es(t.category)}</span><span class="ttime">${fd(t.date)} · ${ft(t.date)}</span></div></div></div><div class="tr2"><div class="tam ${ii?'g':'r'}">${ii?'+':'−'}${fc(Math.abs(t.amount))}</div><div style="display:flex;gap:4px;justify-content:flex-end"><button class="td" onclick="oEdit('${t.id}')">edit</button><button class="td" onclick="del('${t.id}')">remove</button></div></div></div>${t.description?`<div class="tde">${es(t.description)}</div>`:''}</div>`;}).join('');
         h+=`<div class="dg"><div class="dl">${fd(dk)}</div>${cards}</div>`;});
 
       app.innerHTML=`
@@ -755,20 +839,22 @@
     }
 
     function renderAdd(){
-      const ii=S.txType==='income',f=S.form,allC=[...DC,...S.customCategories];
+      const isEdit=S.view==='edit';
+      const ii=S.txType==='income',f=S.form,cats=allCats();
       const ts=sg('title',f.title),cs=sg('category',f.customCat);
       let ch='';
       if(!ii){
-        const bts=allC.map(c=>`<button class="cb ${f.category===c?'on':''}" onclick="sC('${es(c)}')">${ic(c,'expense')} ${es(c)}</button>`).join('');
+        const bts=cats.map(c=>`<button class="cb ${f.category===c.name?'on':''}" onclick="sC('${es(c.name)}')">${c.emoji} ${es(c.name)}</button>`).join('');
         ch=`<div class="fg"><label class="fl">Category</label><div class="cg">${bts}<button class="cb ${f.category==='__custom__'?'on':''}" onclick="sC('__custom__')">✏️ Custom</button></div>${f.category==='__custom__'?`<div class="sw" style="margin-top:10px"><input class="fi" id="cci" placeholder="Type category name" value="${es(f.customCat)}" oninput="uCC(this.value)" onfocus="uCC(this.value)" onblur="setTimeout(()=>{S.cso=false;rSD('csd');},150)">${S.cso&&cs.length?`<div class="sd" id="csd">${cs.map(s=>`<button class="si" onmousedown="event.preventDefault()" onclick="pCS('${es(s.v)}')"><span class="sc">×${s.c}</span>${es(s.v)}</button>`).join('')}</div>`:''}</div>`:''}</div>`;
       }
+      const title=isEdit?(ii?'Edit Income':'Edit Expense'):(ii?'Add Income':'Add Expense');
+      const btnLabel=isEdit?'💾 Save Changes':(ii?'＋ Add Income':'＋ Add Expense');
       app.innerHTML=`
-        <div class="fh fu"><button class="bb" onclick="gH()">← Back</button><div class="ftit ${ii?'g':'r'}">${ii?'Add Income':'Add Expense'}</div></div>
+        <div class="fh fu"><button class="bb" onclick="gH()">← Back</button><div class="ftit ${ii?'g':'r'}">${title}</div></div>
         <div class="fu d1">
           <div class="fg sw"><label class="fl">Title</label>
             <input class="fi" id="ti" placeholder="e.g. Burger King" value="${es(f.title)}"
-              oninput="uTI(this.value)"
-              onfocus="uTI(this.value)"
+              oninput="uTI(this.value)" onfocus="uTI(this.value)"
               onblur="setTimeout(()=>{S.tso=false;rSD('tsd');},150)">
             ${S.tso&&ts.length?`<div class="sd" id="tsd">${ts.map(s=>`<button class="si" onmousedown="event.preventDefault()" onclick="pTS('${es(s.v)}')"><span class="sc">×${s.c}</span>${es(s.v)}</button>`).join('')}</div>`:'<div id="tsd"></div>'}
           </div>
@@ -776,7 +862,7 @@
           ${ch}
           <div class="fg"><label class="fl">Date & Time</label><div class="frow"><input class="fi" type="date" value="${f.date}" oninput="S.form.date=this.value;"><input class="fi" type="time" value="${f.time}" oninput="S.form.time=this.value;"></div><button class="nl" onclick="sN()">Set to now</button></div>
           <div class="fg"><label class="fl">Description (optional)</label><textarea class="fi" placeholder="Add a note…" oninput="S.form.description=this.value;">${es(f.description)}</textarea></div>
-          <button class="sub ${ii?'g':'r'}" onclick="subTx()">${ii?'＋ Add Income':'＋ Add Expense'}</button>
+          <button class="sub ${ii?'g':'r'}" onclick="subTx()">${btnLabel}</button>
         </div>`;
     }
 
@@ -861,35 +947,157 @@
             <div class="ds"><span class="dsl">Oldest entry</span><span class="dsv">${old}</span></div>
           </div></div>
 
+          <div class="ss"><div class="ssl">Categories</div><div class="glass ssc"><p>Add, remove, or change the emoji for your custom spending categories.</p><div class="sbs"><button class="sbb p" onclick="oCats()">🏷 Manage Categories</button></div></div></div>
+
           <div class="ss"><div class="ssl">Export & Backup</div><div class="glass ssc"><p>Download your data to back up or transfer to a new phone.</p><div class="sbs"><button class="sbb p" onclick="exJ()">📦 Export JSON</button><button class="sbb s" onclick="exC()">📊 Export CSV</button></div></div></div>
           <div class="ss"><div class="ssl">Import Data</div><div class="glass ssc"><p>Import a previously exported JSON backup.</p><div class="sbs"><button class="sbb p" onclick="trI('merge')">📥 Import & Merge</button><button class="sbb s" onclick="trI('replace')">🔄 Import & Replace</button></div></div></div>
           <div class="ss"><div class="ssl">Danger Zone</div><div class="glass ssc"><p>Permanently delete all transaction data.</p><div class="sbs"><button class="sbb d" onclick="cCl()">🗑 Delete All Data</button></div></div></div>
         </div>`;
     }
 
-    // Handlers
+    // ── CATEGORIES MANAGER ──
+    const EMOJI_LIST=['🍽','🛒','☕','🍕','🍔','🍜','🥗','🍣','🥤','🍦',
+      '🚗','🚌','✈️','🚂','⛽','🛵','🚕','🚲','🛳','🚁',
+      '🏠','💡','📱','💻','🖥','📺','🛁','🔌','📶','🔑',
+      '🛍','👗','👟','💄','🎒','⌚','👒','🧴','💍','🕶',
+      '🏋️','⚽','🎮','🎬','🎵','📚','🎨','🎭','🎯','🎲',
+      '💊','🏥','💉','🦷','💪','🧘','🌿','🩺','💆','🧬',
+      '💰','💳','🏦','📈','💹','🏷','💵','🪙','💴','💸',
+      '🎁','🎂','🥂','🎉','💐','🎀','🪴','🕯','🎊','🌟',
+      '🌍','🌊','⛰','🌴','🌸','🐶','🐱','🐠','🌻','🍀',
+      '📌','📎','🗂','📋','📦','🔧','⚙️','🗃','📏','🔍'];
+
+    function renderCats(){
+      const custom=S.customCategories;
+      const defaultRows=DC_OBJ.map(c=>`
+        <div class="cat-mgr-row">
+          <div class="cat-emoji-btn" style="cursor:default">${c.emoji}</div>
+          <div style="flex:1;font-size:14px;font-weight:600;color:var(--text-sub)">${es(c.name)}</div>
+          <span class="cat-locked">built-in</span>
+        </div>`).join('');
+      const customRows=custom.map((c,i)=>`
+        <div class="cat-mgr-row" id="crow-${i}">
+          <button class="cat-emoji-btn" onclick="openEmojiPicker(${i})" title="Change emoji">${c.emoji}</button>
+          <input class="cat-name-inp" value="${es(c.name)}" oninput="updCatName(${i},this.value)" placeholder="Category name">
+          <button class="cat-del-btn" onclick="delCat(${i})">✕</button>
+        </div>`).join('');
+      app.innerHTML=`
+        <div class="fh fu"><button class="bb" onclick="oSet()">← Back</button><div class="ftit g">Categories</div></div>
+        <div class="fu d1">
+          <div class="ss"><div class="ssl">Built-in Categories</div>
+            <div class="glass ssc">${defaultRows}</div>
+          </div>
+          <div class="ss"><div class="ssl">Custom Categories</div>
+            <div class="glass ssc" id="custom-cat-list">
+              ${customRows||'<div style="font-size:13px;color:var(--text-muted);padding:8px 0">No custom categories yet.</div>'}
+              <div class="cat-add-row" style="margin-top:${custom.length?'14px':'4px'}">
+                <button class="cat-emoji-btn" id="new-emoji-btn" onclick="openEmojiPicker(-1)">➕</button>
+                <input class="cat-name-inp" id="new-cat-name" placeholder="New category name…">
+                <button class="cat-save-btn" onclick="addCat()">Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="emoji-picker-mount"></div>`;
+    }
+
+    let newCatEmoji='📌';
+
+    window.openEmojiPicker=idx=>{
+      const mount=document.getElementById('emoji-picker-mount');
+      if(!mount) return;
+      mount.innerHTML=`
+        <div class="emoji-modal" onclick="if(event.target===this)closeEmojiPicker()">
+          <div class="emoji-sheet">
+            <h4>${idx===-1?'Pick icon for new category':'Change category icon'}</h4>
+            <div class="emoji-grid">
+              ${EMOJI_LIST.map(e=>`<button class="emoji-opt" onclick="pickEmoji(${idx},'${e}')">${e}</button>`).join('')}
+            </div>
+          </div>
+        </div>`;
+    };
+    window.closeEmojiPicker=()=>{ const m=document.querySelector('.emoji-modal'); if(m) m.remove(); };
+    window.pickEmoji=(idx,emoji)=>{
+      closeEmojiPicker();
+      if(idx===-1){
+        newCatEmoji=emoji;
+        const btn=document.getElementById('new-emoji-btn');
+        if(btn) btn.textContent=emoji;
+      } else {
+        S.customCategories[idx].emoji=emoji;
+        svAll();
+        const btn=document.querySelector(`#crow-${idx} .cat-emoji-btn`);
+        if(btn) btn.textContent=emoji;
+      }
+    };
+    window.updCatName=(idx,val)=>{ S.customCategories[idx].name=val; svAll(); };
+    window.delCat=idx=>{
+      const name=S.customCategories[idx].name;
+      S.customCategories.splice(idx,1);
+      svAll(); renderCats();
+      toast(`Removed "${name}"`);
+    };
+    window.addCat=()=>{
+      const inp=document.getElementById('new-cat-name');
+      const name=inp?inp.value.trim():'';
+      if(!name){ toast('Enter a category name','err'); return; }
+      if(allCats().some(c=>c.name.toLowerCase()===name.toLowerCase())){ toast('Category already exists','err'); return; }
+      S.customCategories.push({name,emoji:newCatEmoji});
+      newCatEmoji='📌';
+      svAll(); renderCats();
+      toast(`Added "${name}"`);
+    };
     window.tgl=()=>{S.so=!S.so;if(!S.so)S.sq='';render();};
     window.oSr=v=>{S.sq=v;render();};
-    window.oAdd=t=>{S.view='add';S.txType=t;const n=nw();S.form={title:'',amount:'',category:'',customCat:'',description:'',date:n.date,time:n.time};S.tso=false;S.cso=false;render();};
-    window.gH=()=>{S.view='home';render();};
+    window.oAdd=t=>{
+      S.view='add'; S.txType=t; S.editingId=null;
+      const n=nw(); S.form={title:'',amount:'',category:'',customCat:'',description:'',date:n.date,time:n.time};
+      S.tso=false; S.cso=false; render();
+    };
+    window.oEdit=id=>{
+      const t=S.transactions.find(x=>x.id===id); if(!t) return;
+      S.view='edit'; S.txType=t.type; S.editingId=id;
+      const d=new Date(t.date), p=n=>String(n).padStart(2,'0');
+      const knownCat=allCats().some(c=>c.name===t.category);
+      S.form={
+        title:t.title, amount:String(t.amount),
+        category:t.type==='income'?'':(knownCat?t.category:'__custom__'),
+        customCat:knownCat||t.type==='income'?'':t.category,
+        description:t.description||'',
+        date:`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`,
+        time:`${p(d.getHours())}:${p(d.getMinutes())}`
+      };
+      S.tso=false; S.cso=false; render();
+    };
+    window.gH=()=>{S.view='home'; S.editingId=null; render();};
     window.oHist=()=>{S.view='history';render();};
+    window.oSet=()=>{S.view='settings';render();};
+    window.oCats=()=>{S.view='categories';render();};
     window.toggleMonth=mk=>{S.openMonths[mk]=!S.openMonths[mk];render();};
     window.sC=c=>{S.form.category=c;render();};
     window.sN=()=>{const n=nw();S.form.date=n.date;S.form.time=n.time;render();};
     window.pTS=v=>{S.form.title=v;S.tso=false;render();};
     window.pCS=v=>{S.form.customCat=v;S.cso=false;render();};
-    window.oSet=()=>{S.view='settings';render();};
 
     window.subTx=()=>{
-      const f=S.form;if(!f.title.trim()||!f.amount||isNaN(+f.amount)||+f.amount<=0)return;
+      const f=S.form;
+      if(!f.title.trim()||!f.amount||isNaN(+f.amount)||+f.amount<=0) return;
       const ii=S.txType==='income';
       const cat=ii?'Income':f.category==='__custom__'?(f.customCat.trim()||'Other'):(f.category||'Other');
-      if(!ii&&f.category==='__custom__'&&f.customCat.trim()&&!S.customCategories.includes(f.customCat.trim())&&!DC.includes(f.customCat.trim()))S.customCategories.push(f.customCat.trim());
+      if(!ii&&f.category==='__custom__'&&f.customCat.trim()&&!allCats().some(c=>c.name===f.customCat.trim()))
+        S.customCategories.push({name:f.customCat.trim(),emoji:'📌'});
       const ds2=f.date&&f.time?`${f.date}T${f.time}`:f.date?`${f.date}T00:00`:new Date().toISOString();
-      S.transactions.unshift({id:uid(),type:S.txType,title:f.title.trim(),amount:+f.amount,category:cat,description:f.description.trim(),date:new Date(ds2).toISOString()});
-      sv({transactions:S.transactions,customCategories:S.customCategories});S.view='home';render();
+      const txData={type:S.txType,title:f.title.trim(),amount:+f.amount,category:cat,description:f.description.trim(),date:new Date(ds2).toISOString()};
+      if(S.view==='edit'&&S.editingId){
+        const idx=S.transactions.findIndex(x=>x.id===S.editingId);
+        if(idx>-1) S.transactions[idx]={...S.transactions[idx],...txData};
+        toast('Transaction updated ✓');
+      } else {
+        S.transactions.unshift({id:uid(),...txData});
+      }
+      svAll(); S.view='home'; S.editingId=null; render();
     };
-    window.del=id=>{S.transactions=S.transactions.filter(t=>t.id!==id);sv({transactions:S.transactions,customCategories:S.customCategories});render();};
+    window.del=id=>{S.transactions=S.transactions.filter(t=>t.id!==id);svAll();render();};
 
     // Toast
     function toast(m,t='ok'){const e=document.createElement('div');e.className=`toast ${t}`;e.textContent=m;document.body.appendChild(e);requestAnimationFrame(()=>e.classList.add('v'));setTimeout(()=>{e.classList.remove('v');setTimeout(()=>e.remove(),400);},2800);}
@@ -901,7 +1109,12 @@
     // Import
     let iM='merge';
     window.trI=m=>{iM=m;const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=hImp;i.click();};
-    function hImp(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const imp=JSON.parse(ev.target.result);if(!imp.transactions||!Array.isArray(imp.transactions)){toast('Invalid file','err');return;}if(iM==='replace'){S.transactions=imp.transactions;S.customCategories=imp.customCategories||[];}else{const ids=new Set(S.transactions.map(t=>t.id));const nw2=imp.transactions.filter(t=>!ids.has(t.id));S.transactions=[...S.transactions,...nw2];(imp.customCategories||[]).forEach(c=>{if(!S.customCategories.includes(c)&&!DC.includes(c))S.customCategories.push(c);});toast(`Merged ${nw2.length} new`);sv({transactions:S.transactions,customCategories:S.customCategories});render();return;}sv({transactions:S.transactions,customCategories:S.customCategories});toast(`Imported ${imp.transactions.length}`);render();}catch(err){toast('Read failed','err');}};r.readAsText(f);}
+    function hImp(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const imp=JSON.parse(ev.target.result);if(!imp.transactions||!Array.isArray(imp.transactions)){toast('Invalid file','err');return;}
+      // Normalize imported customCategories to objects
+      const normCats=(arr)=>(arr||[]).map(c=>typeof c==='string'?{name:c,emoji:'📌'}:c);
+      if(iM==='replace'){S.transactions=imp.transactions;S.customCategories=normCats(imp.customCategories);}
+      else{const ids=new Set(S.transactions.map(t=>t.id));const nw2=imp.transactions.filter(t=>!ids.has(t.id));S.transactions=[...S.transactions,...nw2];normCats(imp.customCategories).forEach(c=>{if(!allCats().some(x=>x.name===c.name))S.customCategories.push(c);});toast(`Merged ${nw2.length} new`);svAll();render();return;}
+      svAll();toast(`Imported ${imp.transactions.length}`);render();}catch(err){toast('Read failed','err');}};r.readAsText(f);}
 
     // Clear
     window.cCl=()=>{const d=document.createElement('div');d.innerHTML=`<div class="mo" onclick="if(event.target===this)this.parentElement.remove()"><div class="mb"><h3>🗑 Delete All Data?</h3><p>This will permanently remove all ${S.transactions.length} transactions and custom categories.</p><div class="ma"><button class="sbb s" onclick="this.closest('.mo').parentElement.remove()">Cancel</button><button class="sbb d" onclick="clAll()">Delete Everything</button></div></div></div>`;document.body.appendChild(d);};
