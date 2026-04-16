@@ -34,7 +34,36 @@
       --r: 20px;
       --r-sm: 14px;
       --blur: 28px;
+      --orb1: rgba(52,211,153,0.15);
+      --orb2: rgba(52,211,153,0.08);
     }
+
+    /* ── Light mode ── */
+    body.light {
+      --bg: #f0f7f3;
+      --glass: rgba(255, 255, 255, 0.60);
+      --glass-strong: rgba(255, 255, 255, 0.85);
+      --glass-border: rgba(52, 211, 153, 0.18);
+      --glass-border-hover: rgba(52, 211, 153, 0.35);
+      --accent: #059669;
+      --accent-soft: #10b981;
+      --accent-dim: rgba(5, 150, 105, 0.10);
+      --accent-glow: rgba(5, 150, 105, 0.12);
+      --red: #e11d48;
+      --red-dim: rgba(225, 29, 72, 0.08);
+      --text: #0f2d1e;
+      --text-sub: rgba(15, 45, 30, 0.55);
+      --text-muted: rgba(15, 45, 30, 0.32);
+      --orb1: rgba(52,211,153,0.25);
+      --orb2: rgba(16,185,129,0.12);
+    }
+    body.light::after { opacity: 0.15; }
+    body.light .ambient .orb-1 { background: radial-gradient(circle, var(--orb1) 0%, transparent 70%); }
+    body.light .ambient .orb-2 { background: radial-gradient(circle, var(--orb2) 0%, transparent 70%); }
+    body.light .bnav { background: rgba(240,247,243,0.90); border-top-color: rgba(52,211,153,0.15); }
+    body.light .hero { background: linear-gradient(145deg, rgba(255,255,255,0.8), rgba(255,255,255,0.5)); }
+
+    html, body { transition: background 0.4s ease, color 0.4s ease; }
 
     html { height: 100%; }
     body {
@@ -318,6 +347,87 @@
     .inb strong { color: var(--accent); }
     .inb-i { padding: 10px 22px; background: var(--accent); color: var(--bg); border: none; border-radius: var(--r-sm); font-family: var(--font); font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
     .inb-d { background: none; border: none; color: var(--text-muted); padding: 8px; font-size: 16px; cursor: pointer; }
+
+    /* ── PIN Lock Screen ── */
+    .pin-screen {
+      position: fixed; inset: 0; z-index: 300;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: var(--bg); padding: 40px 24px;
+      animation: fu 0.3s ease;
+    }
+    .pin-logo { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-bottom: 48px; }
+    .pin-logo .c { color: var(--accent); }
+    .pin-logo .f { color: var(--text); opacity: 0.3; font-weight: 400; }
+    .pin-title { font-size: 16px; font-weight: 600; margin-bottom: 32px; color: var(--text-sub); }
+    .pin-dots { display: flex; gap: 16px; margin-bottom: 48px; }
+    .pin-dot {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid var(--glass-border);
+      background: transparent; transition: all 0.2s;
+    }
+    .pin-dot.filled { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+    .pin-dot.shake { animation: shake 0.4s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 60%{transform:translateX(6px)} 80%{transform:translateX(-4px)} }
+    .pin-dot.error { background: var(--red); border-color: var(--red); }
+    .pin-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px; width: 100%; max-width: 300px;
+    }
+    .pin-key {
+      height: 72px; border-radius: var(--r);
+      background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      color: var(--text); font-family: var(--font); font-size: 22px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center;
+    }
+    .pin-key:active { background: var(--accent-dim); border-color: var(--accent); transform: scale(0.94); }
+    .pin-key.del { font-size: 18px; color: var(--text-sub); }
+    .pin-key.empty { background: none; border: none; cursor: default; }
+    .pin-err { font-size: 13px; color: var(--red); margin-top: -28px; margin-bottom: 28px; min-height: 20px; }
+
+    /* ── Toggle switch ── */
+    .tog-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 0; border-bottom: 1px solid rgba(52,211,153,0.05);
+    }
+    .tog-row:last-child { border-bottom: none; }
+    .tog-label { display: flex; flex-direction: column; gap: 2px; }
+    .tog-label span { font-size: 14px; font-weight: 500; }
+    .tog-label small { font-size: 11px; color: var(--text-muted); }
+    .tog {
+      position: relative; width: 48px; height: 28px; flex-shrink: 0;
+    }
+    .tog input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .tog-track {
+      position: absolute; inset: 0; border-radius: 14px;
+      background: var(--glass); border: 1px solid var(--glass-border);
+      cursor: pointer; transition: all 0.3s;
+    }
+    .tog input:checked + .tog-track { background: var(--accent); border-color: var(--accent); }
+    .tog-track::after {
+      content: ''; position: absolute;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--text); top: 3px; left: 3px;
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .tog input:checked + .tog-track::after { transform: translateX(20px); background: #fff; }
+
+    /* PIN setup inside settings */
+    .pin-setup-dots { display: flex; gap: 12px; justify-content: center; margin: 16px 0; }
+    .pin-setup-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--glass-border); background: transparent; transition: all 0.2s; }
+    .pin-setup-dot.filled { background: var(--accent); border-color: var(--accent); }
+    .pin-mini-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 12px; }
+    .pin-mini-key {
+      height: 52px; border-radius: var(--r-sm);
+      background: var(--glass); border: 1px solid var(--glass-border);
+      color: var(--text); font-family: var(--font); font-size: 18px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .pin-mini-key:active { background: var(--accent-dim); border-color: var(--accent); transform: scale(0.94); }
+    .pin-mini-key.del { font-size: 14px; color: var(--text-sub); }
+    .pin-mini-key.empty { background: none; border: none; cursor: default; }
+    .pin-step { font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 4px; }
 
     /* ── History ── */
     .hist-year { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin: 0 0 12px 4px; }
@@ -667,9 +777,44 @@
       const ds=new Blob([JSON.stringify(ld())]).size;
       const dsS=ds>1024?(ds/1024).toFixed(1)+' KB':ds+' B';
       const old=tc?fd([...S.transactions].sort((a,b)=>new Date(a.date)-new Date(b.date))[0].date):'—';
+      const hasPIN=!!(AP.pin);
+      const pinSetupHTML=hasPIN?`
+        <div class="tog-row">
+          <div class="tog-label"><span>PIN Lock</span><small>4-digit PIN set</small></div>
+          <div style="display:flex;gap:8px">
+            <button class="sbb s" style="padding:8px 14px;font-size:12px" onclick="startChangePIN()">Change</button>
+            <button class="sbb d" style="padding:8px 14px;font-size:12px" onclick="removePin()">Remove</button>
+          </div>
+        </div>`:`
+        <div id="pin-setup-area">
+          <div class="tog-row">
+            <div class="tog-label"><span>PIN Lock</span><small>Protect app with 4-digit PIN</small></div>
+            <button class="sbb p" style="padding:8px 14px;font-size:12px" onclick="startSetPIN()">Set PIN</button>
+          </div>
+        </div>`;
+
       app.innerHTML=`
         <div class="fh fu"><button class="bb" onclick="gH()">← Back</button><div class="ftit g">Settings</div></div>
         <div class="fu d1">
+
+          <div class="ss"><div class="ssl">Appearance</div><div class="glass ssc">
+            <div class="tog-row">
+              <div class="tog-label">
+                <span>${AP.theme==='light'?'☀️ Light Mode':'🌙 Dark Mode'}</span>
+                <small>Switch between dark and light</small>
+              </div>
+              <label class="tog">
+                <input type="checkbox" ${AP.theme==='light'?'checked':''} onchange="toggleTheme(this.checked)">
+                <div class="tog-track"></div>
+              </label>
+            </div>
+          </div></div>
+
+          <div class="ss"><div class="ssl">Security</div><div class="glass ssc">
+            ${pinSetupHTML}
+            <div id="pin-inline"></div>
+          </div></div>
+
           <div class="ss"><div class="ssl">Your Data</div><div class="glass ssc">
             <div class="ds"><span class="dsl">Total transactions</span><span class="dsv">${tc}</span></div>
             <div class="ds"><span class="dsl">Income entries</span><span class="dsv">${ic2}</span></div>
@@ -678,6 +823,7 @@
             <div class="ds"><span class="dsl">Data size</span><span class="dsv">${dsS}</span></div>
             <div class="ds"><span class="dsl">Oldest entry</span><span class="dsv">${old}</span></div>
           </div></div>
+
           <div class="ss"><div class="ssl">Export & Backup</div><div class="glass ssc"><p>Download your data to back up or transfer to a new phone.</p><div class="sbs"><button class="sbb p" onclick="exJ()">📦 Export JSON</button><button class="sbb s" onclick="exC()">📊 Export CSV</button></div></div></div>
           <div class="ss"><div class="ssl">Import Data</div><div class="glass ssc"><p>Import a previously exported JSON backup.</p><div class="sbs"><button class="sbb p" onclick="trI('merge')">📥 Import & Merge</button><button class="sbb s" onclick="trI('replace')">🔄 Import & Replace</button></div></div></div>
           <div class="ss"><div class="ssl">Danger Zone</div><div class="glass ssc"><p>Permanently delete all transaction data.</p><div class="sbs"><button class="sbb d" onclick="cCl()">🗑 Delete All Data</button></div></div></div>
@@ -724,7 +870,132 @@
     window.cCl=()=>{const d=document.createElement('div');d.innerHTML=`<div class="mo" onclick="if(event.target===this)this.parentElement.remove()"><div class="mb"><h3>🗑 Delete All Data?</h3><p>This will permanently remove all ${S.transactions.length} transactions and custom categories.</p><div class="ma"><button class="sbb s" onclick="this.closest('.mo').parentElement.remove()">Cancel</button><button class="sbb d" onclick="clAll()">Delete Everything</button></div></div></div>`;document.body.appendChild(d);};
     window.clAll=()=>{S.transactions=[];S.customCategories=[];sv({transactions:[],customCategories:[]});document.querySelector('.mo')?.parentElement?.remove();toast('All data deleted');render();};
 
+    // ── App Preferences ──
+    const AP_KEY='cashflow_prefs';
+    function ldAP(){try{const r=localStorage.getItem(AP_KEY);if(r)return JSON.parse(r);}catch(e){}return{theme:'dark',pin:null};}
+    function svAP(){localStorage.setItem(AP_KEY,JSON.stringify(AP));}
+    let AP=ldAP();
+
+    // Apply theme on boot
+    function applyTheme(){
+      document.body.classList.toggle('light',AP.theme==='light');
+    }
+    applyTheme();
+
+    window.toggleTheme=checked=>{
+      AP.theme=checked?'light':'dark';
+      svAP(); applyTheme();
+      // Re-render settings to update label
+      renderSet();
+    };
+
+    // ── PIN Lock Screen ──
+    function showPINLock(onSuccess){
+      let entered='';
+      const screen=document.createElement('div');
+      screen.className='pin-screen'; screen.id='pin-lock';
+
+      const draw=()=>{
+        screen.innerHTML=`
+          <div class="pin-logo"><span class="c">Cash</span><span class="f">Flow</span></div>
+          <div class="pin-title">Enter your PIN</div>
+          <div class="pin-dots">
+            ${[0,1,2,3].map(i=>`<div class="pin-dot ${entered.length>i?'filled':''}" id="pd${i}"></div>`).join('')}
+          </div>
+          <div class="pin-err" id="perr"></div>
+          <div class="pin-grid">
+            ${[1,2,3,4,5,6,7,8,9,'','0','⌫'].map(k=>`
+              <button class="pin-key ${k===''?'empty':k==='⌫'?'del':''}" ${k===''?'disabled':''} onclick="pinKey('${k}')">${k}</button>`).join('')}
+          </div>`;
+      };
+
+      window.pinKey=k=>{
+        if(k==='⌫'){entered=entered.slice(0,-1);draw();return;}
+        if(entered.length>=4) return;
+        entered+=k;
+        draw();
+        if(entered.length===4){
+          setTimeout(()=>{
+            if(entered===AP.pin){
+              screen.remove();
+              delete window.pinKey;
+              onSuccess();
+            } else {
+              entered='';
+              document.getElementById('perr').textContent='Incorrect PIN. Try again.';
+              document.querySelectorAll('.pin-dot').forEach(d=>{d.classList.add('error');setTimeout(()=>d.classList.remove('error'),500);});
+              draw();
+              document.getElementById('perr').textContent='Incorrect PIN. Try again.';
+            }
+          },120);
+        }
+      };
+
+      draw();
+      document.body.appendChild(screen);
+    }
+
+    // ── PIN Setup (inline in settings) ──
+    let pinSetupBuf='', pinSetupStep=1, pinSetupFirst='';
+
+    window.startSetPIN=()=>{ pinSetupBuf=''; pinSetupStep=1; pinSetupFirst=''; renderPINSetup(); };
+    window.startChangePIN=()=>{ pinSetupBuf=''; pinSetupStep=1; pinSetupFirst=''; renderPINSetup(); };
+
+    function renderPINSetup(){
+      const area=document.getElementById('pin-inline'); if(!area) return;
+      area.innerHTML=`
+        <div style="padding-top:12px">
+          <div class="pin-step">${pinSetupStep===1?'Enter new PIN':'Confirm your PIN'}</div>
+          <div class="pin-setup-dots">
+            ${[0,1,2,3].map(i=>`<div class="pin-setup-dot ${pinSetupBuf.length>i?'filled':''}"></div>`).join('')}
+          </div>
+          <div class="pin-mini-grid">
+            ${[1,2,3,4,5,6,7,8,9,'','0','⌫'].map(k=>`
+              <button class="pin-mini-key ${k===''?'empty':k==='⌫'?'del':''}" ${k===''?'disabled':''} onclick="pinSetupKey('${k}')">${k}</button>`).join('')}
+          </div>
+        </div>`;
+    }
+
+    window.pinSetupKey=k=>{
+      if(k==='⌫'){pinSetupBuf=pinSetupBuf.slice(0,-1);renderPINSetup();return;}
+      if(pinSetupBuf.length>=4) return;
+      pinSetupBuf+=k;
+      renderPINSetup();
+      if(pinSetupBuf.length===4){
+        setTimeout(()=>{
+          if(pinSetupStep===1){
+            pinSetupFirst=pinSetupBuf; pinSetupBuf=''; pinSetupStep=2; renderPINSetup();
+          } else {
+            if(pinSetupBuf===pinSetupFirst){
+              AP.pin=pinSetupBuf; svAP();
+              pinSetupBuf=''; pinSetupStep=1; pinSetupFirst='';
+              toast('PIN set successfully ✓');
+              renderSet();
+            } else {
+              pinSetupBuf=''; pinSetupStep=1; pinSetupFirst='';
+              toast('PINs did not match. Try again.','err');
+              renderPINSetup();
+            }
+          }
+        },120);
+      }
+    };
+
+    window.removePin=()=>{
+      // Ask current PIN first
+      showPINLock(()=>{
+        AP.pin=null; svAP();
+        toast('PIN removed');
+        renderSet();
+      });
+    };
+
     render();
+
+    // Check PIN on boot
+    if(AP.pin){
+      showPINLock(()=>{ /* unlocked, app already rendered */ });
+    }
 
     // PWA
     let dp=null;
