@@ -319,6 +319,84 @@
     .inb-i { padding: 10px 22px; background: var(--accent); color: var(--bg); border: none; border-radius: var(--r-sm); font-family: var(--font); font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
     .inb-d { background: none; border: none; color: var(--text-muted); padding: 8px; font-size: 16px; cursor: pointer; }
 
+    /* ── History ── */
+    .hist-year { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin: 0 0 12px 4px; }
+    .month-card { margin-bottom: 10px; overflow: hidden; cursor: pointer; }
+    .month-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px; gap: 12px;
+    }
+    .month-head:active { background: rgba(52,211,153,0.03); }
+    .mh-left { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .mh-name { font-size: 16px; font-weight: 700; }
+    .mh-count { font-size: 11px; color: var(--text-muted); }
+    .mh-mid { flex: 1; padding: 0 16px; }
+    .mh-bar-track { height: 4px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
+    .mh-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent-soft)); transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+    .mh-bar-sub { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); }
+    .mh-right { text-align: right; flex-shrink: 0; }
+    .mh-bal { font-family: var(--mono); font-size: 15px; font-weight: 700; }
+    .mh-bal.pos { color: var(--accent-soft); }
+    .mh-bal.neg { color: var(--red); }
+    .mh-chevron { font-size: 12px; color: var(--text-muted); margin-left: 8px; transition: transform 0.3s; display: inline-block; }
+    .month-card.open .mh-chevron { transform: rotate(180deg); }
+
+    /* Month breakdown */
+    .month-body { max-height: 0; overflow: hidden; transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1); }
+    .month-body.open { max-height: 9999px; }
+    .month-inner { padding: 0 12px 14px; }
+
+    /* Category breakdown inside month */
+    .mcat-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(52,211,153,0.05); }
+    .mcat-row:last-of-type { border-bottom: none; }
+    .mcat-icon { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; background: rgba(52,211,153,0.07); flex-shrink: 0; }
+    .mcat-info { flex: 1; min-width: 0; }
+    .mcat-name { font-size: 12px; font-weight: 600; }
+    .mcat-track { height: 3px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+    .mcat-fill { height: 100%; border-radius: 3px; }
+    .mcat-amt { font-family: var(--mono); font-size: 12px; font-weight: 600; flex-shrink: 0; }
+    .mcat-cnt { font-size: 10px; color: var(--text-muted); }
+
+    .month-divider { height: 1px; background: rgba(52,211,153,0.06); margin: 8px 0; }
+
+    /* Tx mini list inside month */
+    .mtx { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(52,211,153,0.04); }
+    .mtx:last-child { border-bottom: none; }
+    .mtx-icon { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .mtx-icon.ig { background: rgba(52,211,153,0.08); }
+    .mtx-icon.ir { background: rgba(251,113,133,0.07); }
+    .mtx-info { flex: 1; min-width: 0; }
+    .mtx-title { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mtx-meta { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+    .mtx-amt { font-family: var(--mono); font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .mtx-amt.g { color: var(--accent-soft); }
+    .mtx-amt.r { color: var(--red); }
+
+    .month-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 14px 0 6px; }
+    .ms-pill { text-align: center; padding: 10px 8px; border-radius: 12px; background: rgba(52,211,153,0.04); border: 1px solid rgba(52,211,153,0.07); }
+    .ms-pill .ms-l { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 4px; }
+    .ms-pill .ms-v { font-family: var(--mono); font-size: 12px; font-weight: 700; }
+
+    /* ── Bottom nav ── */
+    .bnav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      max-width: 460px; margin: 0 auto;
+      display: flex; background: rgba(6,13,9,0.88);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid var(--glass-border);
+      padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px));
+      z-index: 90;
+    }
+    .bn-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); font-family: var(--font); font-size: 10px; font-weight: 500;
+      padding: 4px 0; transition: color 0.2s; letter-spacing: 0.3px;
+    }
+    .bn-item svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+    .bn-item.active { color: var(--accent); }
+    .bn-item.active svg { filter: drop-shadow(0 0 6px rgba(52,211,153,0.4)); }
+
     /* Anim */
     @keyframes fu { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
     .fu { animation: fu 0.45s cubic-bezier(0.25,0.46,0.45,0.94) both; }
@@ -334,6 +412,20 @@
 <body>
   <div class="ambient"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
   <div id="app"></div>
+  <nav class="bnav" id="bnav" style="display:none">
+    <button class="bn-item" id="bn-home" onclick="gH()">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </button>
+    <button class="bn-item" id="bn-hist" onclick="oHist()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      History
+    </button>
+    <button class="bn-item" id="bn-set" onclick="oSet()">
+      <svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      Settings
+    </button>
+  </nav>
 
   <script>
     const SK='cashflow_data';
@@ -343,7 +435,7 @@
 
     let S={...ld(),view:'home',txType:'expense',so:false,sq:'',
       form:{title:'',amount:'',category:'',customCat:'',description:'',date:'',time:''},
-      tso:false,cso:false};
+      tso:false,cso:false,openMonths:{}};
 
     const DC=['Food & Dining','Transport','Bills & Utilities','Shopping'];
     const CI={'Food & Dining':'🍽','Transport':'🚗','Bills & Utilities':'📄','Shopping':'🛍'};
@@ -358,8 +450,135 @@
     const searchSvg=`<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>`;
     const gearSvg=`<svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>`;
 
+    const bnav=document.getElementById('bnav');
+    function setNav(v){
+      bnav.style.display='flex';
+      document.getElementById('bn-home').classList.toggle('active',v==='home');
+      document.getElementById('bn-hist').classList.toggle('active',v==='history');
+      document.getElementById('bn-set').classList.toggle('active',v==='settings');
+    }
+    function render(){
+      if(S.view==='add'){bnav.style.display='none';renderAdd();}
+      else if(S.view==='history'){setNav('history');renderHist();}
+      else if(S.view==='settings'){setNav('settings');renderSet();}
+      else{setNav('home');renderHome();}
+    }
+
     const app=document.getElementById('app');
-    function render(){if(S.view==='add')renderAdd();else if(S.view==='settings')renderSet();else renderHome();}
+
+    // ── HISTORY ──
+    function renderHist(){
+      const txs=S.transactions;
+      if(!txs.length){
+        app.innerHTML=`<div class="top-bar fu"><div class="logo"><span class="c">Cash</span><span class="f">Flow</span></div></div><div class="es"><div class="ei">📅</div>No transactions yet.</div>`;
+        return;
+      }
+      // Group by YYYY-MM
+      const byMonth={};
+      txs.forEach(t=>{
+        const d=new Date(t.date),k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        if(!byMonth[k])byMonth[k]=[];
+        byMonth[k].push(t);
+      });
+      const monthKeys=Object.keys(byMonth).sort((a,b)=>b.localeCompare(a));
+
+      // Max expense for bar scaling
+      const monthExpenses=monthKeys.map(k=>byMonth[k].filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0));
+      const maxExp=Math.max(...monthExpenses,1);
+
+      const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+      // Group by year
+      const byYear={};
+      monthKeys.forEach(k=>{const y=k.slice(0,4);if(!byYear[y])byYear[y]=[];byYear[y].push(k);});
+
+      let html='<div class="top-bar fu"><div class="logo"><span class="c">Cash</span><span class="f">Flow</span></div></div>';
+      html+='<div class="fu d1">';
+
+      Object.keys(byYear).sort((a,b)=>b-a).forEach(year=>{
+        html+=`<div class="hist-year">${year}</div>`;
+        byYear[year].forEach(mk=>{
+          const [y,mo]=mk.split('-');
+          const mName=MONTH_NAMES[+mo-1];
+          const mTxs=byMonth[mk].sort((a,b)=>new Date(b.date)-new Date(a.date));
+          const mInc=mTxs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+          const mExp=mTxs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+          const mBal=mInc-mExp;
+          const barPct=Math.round((mExp/maxExp)*100);
+          const isOpen=!!S.openMonths[mk];
+
+          // Category breakdown
+          const catTotals={};
+          mTxs.filter(t=>t.type==='expense').forEach(t=>{catTotals[t.category]=(catTotals[t.category]||0)+t.amount;});
+          const maxCat=Math.max(...Object.values(catTotals),1);
+          const catRows=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([cat,amt])=>{
+            const pct=Math.round((amt/maxCat)*100);
+            const catColor=cat==='Income'?'var(--accent)':'rgba(251,113,133,0.7)';
+            return `<div class="mcat-row">
+              <div class="mcat-icon">${ic(cat,'expense')}</div>
+              <div class="mcat-info">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span class="mcat-name">${es(cat)}</span>
+                  <span class="mcat-cnt">${mTxs.filter(t=>t.category===cat&&t.type==='expense').length} tx</span>
+                </div>
+                <div class="mcat-track"><div class="mcat-fill" style="width:${pct}%;background:${catColor}"></div></div>
+              </div>
+              <div class="mcat-amt" style="color:var(--red)">${fc(amt)}</div>
+            </div>`;
+          }).join('');
+
+          // Transaction list inside month
+          const txRows=mTxs.map(t=>{
+            const ii=t.type==='income';
+            return `<div class="mtx">
+              <div class="mtx-icon ${ii?'ig':'ir'}">${ic(t.category,t.type)}</div>
+              <div class="mtx-info">
+                <div class="mtx-title">${es(t.title)}</div>
+                <div class="mtx-meta">${ft(t.date)} · ${es(t.category)}</div>
+              </div>
+              <div class="mtx-amt ${ii?'g':'r'}">${ii?'+':'−'}${fc(Math.abs(t.amount))}</div>
+            </div>`;
+          }).join('');
+
+          html+=`<div class="glass month-card ${isOpen?'open':''}" onclick="toggleMonth('${mk}')">
+            <div class="month-head">
+              <div class="mh-left">
+                <div class="mh-name">${mName}</div>
+                <div class="mh-count">${mTxs.length} transaction${mTxs.length!==1?'s':''}</div>
+              </div>
+              <div class="mh-mid">
+                <div class="mh-bar-track"><div class="mh-bar-fill" style="width:${isOpen?barPct:0}%"></div></div>
+                <div class="mh-bar-sub"><span>${fc(mExp)} spent</span></div>
+              </div>
+              <div class="mh-right">
+                <div class="mh-bal ${mBal>=0?'pos':'neg'}">${mBal>=0?'+':''}${fc(mBal)}</div>
+              </div>
+              <span class="mh-chevron">▼</span>
+            </div>
+            <div class="month-body ${isOpen?'open':''}">
+              <div class="month-inner">
+                <div class="month-stats">
+                  <div class="ms-pill"><div class="ms-l">Income</div><div class="ms-v" style="color:var(--accent-soft)">${fc(mInc)}</div></div>
+                  <div class="ms-pill"><div class="ms-l">Spent</div><div class="ms-v" style="color:var(--red)">${fc(mExp)}</div></div>
+                  <div class="ms-pill"><div class="ms-l">Balance</div><div class="ms-v" style="color:${mBal>=0?'var(--accent-soft)':'var(--red)'}">${fc(mBal)}</div></div>
+                </div>
+                ${catRows?`<div class="month-divider"></div>${catRows}`:''}
+                <div class="month-divider"></div>
+                ${txRows}
+              </div>
+            </div>
+          </div>`;
+        });
+      });
+      html+='</div>';
+      app.innerHTML=html;
+      // Animate bars after render
+      requestAnimationFrame(()=>{
+        document.querySelectorAll('.mh-bar-fill').forEach((el,i)=>{
+          if(S.openMonths[monthKeys[i]])el.style.width=barPct+'%';
+        });
+      });
+    }
 
     function renderHome(){
       const txs=S.transactions;
@@ -379,7 +598,7 @@
 
       app.innerHTML=`
         <div class="top-bar fu"><div class="logo"><span class="c">Cash</span><span class="f">Flow</span></div>
-          <div class="ta"><button class="ib ${S.so?'on':''}" onclick="tgl()">${searchSvg}</button><button class="ib" onclick="oSet()">${gearSvg}</button></div></div>
+          <div class="ta"><button class="ib ${S.so?'on':''}" onclick="tgl()">${searchSvg}</button></div></div>
         <div class="sw2 ${S.so?'on':''}"><div class="sb2">${searchSvg}<input class="sinp" id="si" placeholder="Search transactions…" value="${es(S.sq)}" oninput="oSr(this.value)"></div></div>
         <div class="glass hero fu d1"><div class="hl">Balance</div><div class="hv ${bal>=0?'pos':'neg'}">${fc(bal)}</div></div>
         <div class="sr fu d2"><div class="glass sp"><span class="sl">Income</span><span class="sv g">${fc(ti)}</span></div><div class="glass sp"><span class="sl">Expenses</span><span class="sv r">${fc(te)}</span></div></div>
@@ -394,19 +613,53 @@
       let ch='';
       if(!ii){
         const bts=allC.map(c=>`<button class="cb ${f.category===c?'on':''}" onclick="sC('${es(c)}')">${ic(c,'expense')} ${es(c)}</button>`).join('');
-        ch=`<div class="fg"><label class="fl">Category</label><div class="cg">${bts}<button class="cb ${f.category==='__custom__'?'on':''}" onclick="sC('__custom__')">✏️ Custom</button></div>${f.category==='__custom__'?`<div class="sw" style="margin-top:10px"><input class="fi" id="cci" placeholder="Type category name" value="${es(f.customCat)}" oninput="S.form.customCat=this.value;S.cso=true;render();" onfocus="S.cso=true;render();" onblur="setTimeout(()=>{S.cso=false;render();},150)">${S.cso&&cs.length?`<div class="sd">${cs.map(s=>`<button class="si" onmousedown="event.preventDefault()" onclick="pCS('${es(s.v)}')"><span class="sc">×${s.c}</span>${es(s.v)}</button>`).join('')}</div>`:''}</div>`:''}</div>`;
+        ch=`<div class="fg"><label class="fl">Category</label><div class="cg">${bts}<button class="cb ${f.category==='__custom__'?'on':''}" onclick="sC('__custom__')">✏️ Custom</button></div>${f.category==='__custom__'?`<div class="sw" style="margin-top:10px"><input class="fi" id="cci" placeholder="Type category name" value="${es(f.customCat)}" oninput="uCC(this.value)" onfocus="uCC(this.value)" onblur="setTimeout(()=>{S.cso=false;rSD('csd');},150)">${S.cso&&cs.length?`<div class="sd" id="csd">${cs.map(s=>`<button class="si" onmousedown="event.preventDefault()" onclick="pCS('${es(s.v)}')"><span class="sc">×${s.c}</span>${es(s.v)}</button>`).join('')}</div>`:''}</div>`:''}</div>`;
       }
       app.innerHTML=`
         <div class="fh fu"><button class="bb" onclick="gH()">← Back</button><div class="ftit ${ii?'g':'r'}">${ii?'Add Income':'Add Expense'}</div></div>
         <div class="fu d1">
-          <div class="fg sw"><label class="fl">Title</label><input class="fi" id="ti" placeholder="e.g. Burger King" value="${es(f.title)}" oninput="S.form.title=this.value;S.tso=true;render();" onfocus="S.tso=true;render();" onblur="setTimeout(()=>{S.tso=false;render();},150)">${S.tso&&ts.length?`<div class="sd">${ts.map(s=>`<button class="si" onmousedown="event.preventDefault()" onclick="pTS('${es(s.v)}')"><span class="sc">×${s.c}</span>${es(s.v)}</button>`).join('')}</div>`:''}</div>
-          <div class="fg"><label class="fl">Amount (€)</label><input class="fi" type="number" min="0.01" step="0.01" placeholder="0.00" value="${es(f.amount)}" oninput="S.form.amount=this.value;"></div>
+          <div class="fg sw"><label class="fl">Title</label>
+            <input class="fi" id="ti" placeholder="e.g. Burger King" value="${es(f.title)}"
+              oninput="uTI(this.value)"
+              onfocus="uTI(this.value)"
+              onblur="setTimeout(()=>{S.tso=false;rSD('tsd');},150)">
+            ${S.tso&&ts.length?`<div class="sd" id="tsd">${ts.map(s=>`<button class="si" onmousedown="event.preventDefault()" onclick="pTS('${es(s.v)}')"><span class="sc">×${s.c}</span>${es(s.v)}</button>`).join('')}</div>`:'<div id="tsd"></div>'}
+          </div>
+          <div class="fg"><label class="fl">Amount (€)</label><input class="fi" id="ai" type="number" min="0.01" step="0.01" placeholder="0.00" value="${es(f.amount)}" oninput="S.form.amount=this.value;"></div>
           ${ch}
           <div class="fg"><label class="fl">Date & Time</label><div class="frow"><input class="fi" type="date" value="${f.date}" oninput="S.form.date=this.value;"><input class="fi" type="time" value="${f.time}" oninput="S.form.time=this.value;"></div><button class="nl" onclick="sN()">Set to now</button></div>
           <div class="fg"><label class="fl">Description (optional)</label><textarea class="fi" placeholder="Add a note…" oninput="S.form.description=this.value;">${es(f.description)}</textarea></div>
           <button class="sub ${ii?'g':'r'}" onclick="subTx()">${ii?'＋ Add Income':'＋ Add Expense'}</button>
         </div>`;
     }
+
+    // Update title input — only re-draw the dropdown, never the whole form
+    window.uTI=v=>{
+      S.form.title=v;
+      const hits=sg('title',v);
+      S.tso=hits.length>0;
+      const box=document.getElementById('tsd');
+      if(!box) return;
+      if(S.tso){
+        box.className='sd'; box.id='tsd';
+        box.innerHTML=hits.map(s=>`<button class="si" onmousedown="event.preventDefault()" onclick="pTS('${es(s.v)}')"><span class="sc">×${s.c}</span>${es(s.v)}</button>`).join('');
+      } else { box.innerHTML=''; box.className=''; }
+    };
+    // Update custom category input
+    window.uCC=v=>{
+      S.form.customCat=v;
+      const hits=sg('category',v);
+      S.cso=hits.length>0;
+      const box=document.getElementById('csd');
+      if(!box) return;
+      if(S.cso){
+        box.className='sd'; box.id='csd';
+        box.innerHTML=hits.map(s=>`<button class="si" onmousedown="event.preventDefault()" onclick="pCS('${es(s.v)}')"><span class="sc">×${s.c}</span>${es(s.v)}</button>`).join('');
+      } else { box.innerHTML=''; box.className=''; }
+    };
+    // Remove suggestion dropdown by id without re-rendering
+    function rSD(id){const el=document.getElementById(id);if(el){el.innerHTML='';el.className='';}}
+
 
     function renderSet(){
       const tc=S.transactions.length,ic2=S.transactions.filter(t=>t.type==='income').length,ec=tc-ic2;
@@ -436,6 +689,8 @@
     window.oSr=v=>{S.sq=v;render();};
     window.oAdd=t=>{S.view='add';S.txType=t;const n=nw();S.form={title:'',amount:'',category:'',customCat:'',description:'',date:n.date,time:n.time};S.tso=false;S.cso=false;render();};
     window.gH=()=>{S.view='home';render();};
+    window.oHist=()=>{S.view='history';render();};
+    window.toggleMonth=mk=>{S.openMonths[mk]=!S.openMonths[mk];render();};
     window.sC=c=>{S.form.category=c;render();};
     window.sN=()=>{const n=nw();S.form.date=n.date;S.form.time=n.time;render();};
     window.pTS=v=>{S.form.title=v;S.tso=false;render();};
