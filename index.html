@@ -655,19 +655,27 @@
       {name:'Bills & Utilities',emoji:'📄'},
       {name:'Shopping',emoji:'🛍'}
     ];
+    const DC_INC=[
+      {name:'Salary',emoji:'💼'},
+      {name:'Freelance',emoji:'🧑‍💻'},
+      {name:'Gift',emoji:'🎁'},
+      {name:'Investment',emoji:'📈'},
+      {name:'Other Income',emoji:'💰'}
+    ];
     // Legacy flat array kept for backward compat — always derive from DC_OBJ
     const DC=DC_OBJ.map(c=>c.name);
     // Convert old flat customCategories strings to objects on load
     if(S.customCategories.length && typeof S.customCategories[0]==='string'){
       S.customCategories=S.customCategories.map(n=>({name:n,emoji:'📌'}));
     }
-    // All categories combined as objects
+    // All expense categories combined as objects
     function allCats(){return[...DC_OBJ,...S.customCategories];}
-    // Get emoji for a category name
+    // Get emoji for a category name (works for both income and expense)
     function catEmoji(name,type){
-      if(type==='income') return '💰';
-      const found=allCats().find(c=>c.name===name);
-      return found?found.emoji:'📌';
+      const incFound=DC_INC.find(c=>c.name===name);
+      if(incFound) return incFound.emoji;
+      const expFound=allCats().find(c=>c.name===name);
+      return expFound?expFound.emoji:'💰';
     }
     function fc(n){return new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(n);}
     function fd(d){return new Date(d).toLocaleDateString('de-DE',{day:'2-digit',month:'short',year:'numeric'});}
@@ -842,18 +850,19 @@
       const isEdit=S.view==='edit';
       const ii=S.txType==='income',f=S.form,cats=allCats();
       const ts=sg('title',f.title),cs=sg('category',f.customCat);
-      let ch='';
-      if(!ii){
-        const bts=cats.map(c=>`<button class="cb ${f.category===c.name?'on':''}" onclick="sC('${es(c.name)}')">${c.emoji} ${es(c.name)}</button>`).join('');
-        ch=`<div class="fg"><label class="fl">Category</label><div class="cg">${bts}<button class="cb ${f.category==='__custom__'?'on':''}" onclick="sC('__custom__')">✏️ Custom</button></div>${f.category==='__custom__'?`<div class="sw" style="margin-top:10px"><input class="fi" id="cci" placeholder="Type category name" value="${es(f.customCat)}" oninput="uCC(this.value)" onfocus="uCC(this.value)" onblur="setTimeout(()=>{S.cso=false;rSD('csd');},150)">${S.cso&&cs.length?`<div class="sd" id="csd">${cs.map(s=>`<button class="si" onmousedown="event.preventDefault()" onclick="pCS('${es(s.v)}')"><span class="sc">×${s.c}</span>${es(s.v)}</button>`).join('')}</div>`:''}</div>`:''}</div>`;
-      }
+
+      // Build category chips — same pattern for both income and expense
+      const catList=ii?DC_INC:cats;
+      const bts=catList.map(c=>`<button class="cb ${f.category===c.name?'on':''}" onclick="sC('${es(c.name)}')">${c.emoji} ${es(c.name)}</button>`).join('');
+      const ch=`<div class="fg"><label class="fl">Category</label><div class="cg">${bts}<button class="cb ${f.category==='__custom__'?'on':''}" onclick="sC('__custom__')">✏️ Custom</button></div>${f.category==='__custom__'?`<div class="sw" style="margin-top:10px"><input class="fi" id="cci" placeholder="Type category name" value="${es(f.customCat)}" oninput="uCC(this.value)" onfocus="uCC(this.value)" onblur="setTimeout(()=>{S.cso=false;rSD('csd');},150)">${S.cso&&cs.length?`<div class="sd" id="csd">${cs.map(s=>`<button class="si" onmousedown="event.preventDefault()" onclick="pCS('${es(s.v)}')"><span class="sc">×${s.c}</span>${es(s.v)}</button>`).join('')}</div>`:''}</div>`:''}</div>`;
+
       const title=isEdit?(ii?'Edit Income':'Edit Expense'):(ii?'Add Income':'Add Expense');
       const btnLabel=isEdit?'💾 Save Changes':(ii?'＋ Add Income':'＋ Add Expense');
       app.innerHTML=`
         <div class="fh fu"><button class="bb" onclick="gH()">← Back</button><div class="ftit ${ii?'g':'r'}">${title}</div></div>
         <div class="fu d1">
           <div class="fg sw"><label class="fl">Title</label>
-            <input class="fi" id="ti" placeholder="e.g. Burger King" value="${es(f.title)}"
+            <input class="fi" id="ti" placeholder="${ii?'e.g. Monthly salary':'e.g. Burger King'}" value="${es(f.title)}"
               oninput="uTI(this.value)" onfocus="uTI(this.value)"
               onblur="setTimeout(()=>{S.tso=false;rSD('tsd');},150)">
             ${S.tso&&ts.length?`<div class="sd" id="tsd">${ts.map(s=>`<button class="si" onmousedown="event.preventDefault()" onclick="pTS('${es(s.v)}')"><span class="sc">×${s.c}</span>${es(s.v)}</button>`).join('')}</div>`:'<div id="tsd"></div>'}
@@ -1058,34 +1067,30 @@
       const t=S.transactions.find(x=>x.id===id); if(!t) return;
       S.view='edit'; S.txType=t.type; S.editingId=id;
       const d=new Date(t.date), p=n=>String(n).padStart(2,'0');
-      const knownCat=allCats().some(c=>c.name===t.category);
+      const knownExpCat=allCats().some(c=>c.name===t.category);
+      const knownIncCat=DC_INC.some(c=>c.name===t.category);
+      const knownCat=knownExpCat||knownIncCat;
       S.form={
         title:t.title, amount:String(t.amount),
-        category:t.type==='income'?'':(knownCat?t.category:'__custom__'),
-        customCat:knownCat||t.type==='income'?'':t.category,
+        category:knownCat?t.category:'__custom__',
+        customCat:knownCat?'':t.category,
         description:t.description||'',
         date:`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`,
         time:`${p(d.getHours())}:${p(d.getMinutes())}`
       };
       S.tso=false; S.cso=false; render();
     };
-    window.gH=()=>{S.view='home'; S.editingId=null; render();};
-    window.oHist=()=>{S.view='history';render();};
-    window.oSet=()=>{S.view='settings';render();};
-    window.oCats=()=>{S.view='categories';render();};
-    window.toggleMonth=mk=>{S.openMonths[mk]=!S.openMonths[mk];render();};
-    window.sC=c=>{S.form.category=c;render();};
-    window.sN=()=>{const n=nw();S.form.date=n.date;S.form.time=n.time;render();};
-    window.pTS=v=>{S.form.title=v;S.tso=false;render();};
-    window.pCS=v=>{S.form.customCat=v;S.cso=false;render();};
 
     window.subTx=()=>{
       const f=S.form;
       if(!f.title.trim()||!f.amount||isNaN(+f.amount)||+f.amount<=0) return;
       const ii=S.txType==='income';
-      const cat=ii?'Income':f.category==='__custom__'?(f.customCat.trim()||'Other'):(f.category||'Other');
-      if(!ii&&f.category==='__custom__'&&f.customCat.trim()&&!allCats().some(c=>c.name===f.customCat.trim()))
-        S.customCategories.push({name:f.customCat.trim(),emoji:'📌'});
+      const cat=f.category==='__custom__'?(f.customCat.trim()||'Other'):(f.category||(ii?'Other Income':'Other'));
+      // Save new custom category as object (for both income and expense)
+      if(f.category==='__custom__'&&f.customCat.trim()){
+        if(!allCats().some(c=>c.name===f.customCat.trim())&&!DC_INC.some(c=>c.name===f.customCat.trim()))
+          S.customCategories.push({name:f.customCat.trim(),emoji:ii?'💰':'📌'});
+      }
       const ds2=f.date&&f.time?`${f.date}T${f.time}`:f.date?`${f.date}T00:00`:new Date().toISOString();
       const txData={type:S.txType,title:f.title.trim(),amount:+f.amount,category:cat,description:f.description.trim(),date:new Date(ds2).toISOString()};
       if(S.view==='edit'&&S.editingId){
