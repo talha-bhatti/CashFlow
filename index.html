@@ -430,6 +430,22 @@
     .pin-step { font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 4px; }
 
     /* ── History ── */
+    .hist-tabs {
+      display: flex; gap: 6px; margin-bottom: 20px;
+      background: var(--glass); border: 1px solid var(--glass-border);
+      border-radius: var(--r); padding: 5px;
+    }
+    .hist-tab {
+      flex: 1; padding: 10px 8px; border: none; border-radius: var(--r-sm);
+      font-family: var(--font); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; color: var(--text-muted);
+      background: transparent;
+    }
+    .hist-tab.active {
+      background: var(--accent-dim); color: var(--accent);
+      border: 1px solid rgba(52,211,153,0.2);
+      box-shadow: 0 0 16px rgba(52,211,153,0.06);
+    }
     .hist-year { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin: 0 0 12px 4px; }
     .month-card { margin-bottom: 10px; overflow: hidden; cursor: pointer; }
     .month-head {
@@ -466,7 +482,6 @@
     .mcat-fill { height: 100%; border-radius: 3px; }
     .mcat-amt { font-family: var(--mono); font-size: 12px; font-weight: 600; flex-shrink: 0; }
     .mcat-cnt { font-size: 10px; color: var(--text-muted); }
-
     .month-divider { height: 1px; background: rgba(52,211,153,0.06); margin: 8px 0; }
 
     /* Tx mini list inside month */
@@ -481,11 +496,51 @@
     .mtx-amt { font-family: var(--mono); font-size: 13px; font-weight: 700; flex-shrink: 0; }
     .mtx-amt.g { color: var(--accent-soft); }
     .mtx-amt.r { color: var(--red); }
-
     .month-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 14px 0 6px; }
     .ms-pill { text-align: center; padding: 10px 8px; border-radius: 12px; background: rgba(52,211,153,0.04); border: 1px solid rgba(52,211,153,0.07); }
     .ms-pill .ms-l { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 4px; }
     .ms-pill .ms-v { font-family: var(--mono); font-size: 12px; font-weight: 700; }
+
+    /* ── Category view cards ── */
+    .cat-grid-view { display: flex; flex-direction: column; gap: 8px; }
+    .cat-view-card {
+      padding: 16px 18px; cursor: pointer; transition: border-color 0.2s;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .cat-view-card:active { border-color: var(--glass-border-hover); }
+    .cat-view-icon {
+      width: 44px; height: 44px; border-radius: 14px; font-size: 20px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .cat-view-icon.exp-bg { background: rgba(251,113,133,0.08); }
+    .cat-view-icon.inc-bg { background: rgba(52,211,153,0.1); }
+    .cat-view-info { flex: 1; min-width: 0; }
+    .cat-view-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .cat-view-bar-wrap { display: flex; align-items: center; gap: 8px; }
+    .cat-view-track { flex: 1; height: 3px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+    .cat-view-fill { height: 100%; border-radius: 3px; transition: width 0.7s cubic-bezier(0.4,0,0.2,1); }
+    .cat-view-count { font-size: 10px; color: var(--text-muted); white-space: nowrap; }
+    .cat-view-right { text-align: right; flex-shrink: 0; }
+    .cat-view-amt { font-family: var(--mono); font-size: 15px; font-weight: 700; }
+    .cat-view-chevron { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+    .hist-section-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin: 16px 0 10px 4px; }
+
+    /* ── Category detail screen ── */
+    .cat-detail-hero {
+      padding: 24px 20px 20px; margin-bottom: 16px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .cat-detail-hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(52,211,153,0.08), transparent 70%);
+      pointer-events: none;
+    }
+    .cat-detail-icon { font-size: 36px; margin-bottom: 8px; position: relative; }
+    .cat-detail-name { font-size: 18px; font-weight: 700; margin-bottom: 16px; position: relative; }
+    .cat-detail-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; position: relative; }
+    .cat-detail-stat { text-align: center; }
+    .cat-detail-stat .cdsl { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 4px; }
+    .cat-detail-stat .cdsv { font-family: var(--mono); font-size: 14px; font-weight: 700; }
 
     /* ── Categories manager ── */
     .cat-mgr-row {
@@ -646,7 +701,7 @@
 
     let S={...ld(),view:'home',txType:'expense',so:false,sq:'',
       form:{title:'',amount:'',category:'',customCat:'',description:'',date:'',time:''},
-      tso:false,cso:false,openMonths:{},editingId:null};
+      tso:false,cso:false,openMonths:{},editingId:null,histTab:'months',catDetailName:null};
 
     // Default categories as objects with emoji
     const DC_OBJ=[
@@ -675,7 +730,8 @@
       const incFound=DC_INC.find(c=>c.name===name);
       if(incFound) return incFound.emoji;
       const expFound=allCats().find(c=>c.name===name);
-      return expFound?expFound.emoji:'💰';
+      if(expFound) return expFound.emoji;
+      return type==='income'?'💰':'📌';
     }
     function fc(n){return new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(n);}
     function fd(d){return new Date(d).toLocaleDateString('de-DE',{day:'2-digit',month:'short',year:'numeric'});}
@@ -697,6 +753,7 @@
     }
     function render(){
       if(S.view==='add'||S.view==='edit'){bnav.style.display='none';renderAdd();}
+      else if(S.view==='history'&&S.catDetailName){bnav.style.display='none';renderHist();}
       else if(S.view==='history'){setNav('history');renderHist();}
       else if(S.view==='settings'){setNav('settings');renderSet();}
       else if(S.view==='categories'){bnav.style.display='none';renderCats();}
@@ -706,13 +763,30 @@
     const app=document.getElementById('app');
 
     // ── HISTORY ──
+    const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
     function renderHist(){
       const txs=S.transactions;
+      const topBar=`<div class="top-bar fu"><div class="logo"><span class="c">Cash</span><span class="f">Flow</span></div></div>`;
+
       if(!txs.length){
-        app.innerHTML=`<div class="top-bar fu"><div class="logo"><span class="c">Cash</span><span class="f">Flow</span></div></div><div class="es"><div class="ei">📅</div>No transactions yet.</div>`;
+        app.innerHTML=`${topBar}<div class="es"><div class="ei">📅</div>No transactions yet.<br>Add some from Home.</div>`;
         return;
       }
-      // Group by YYYY-MM
+
+      // If a category is selected, show detail screen
+      if(S.catDetailName) { renderCatDetail(); return; }
+
+      const tabs=`<div class="hist-tabs fu">
+        <button class="hist-tab ${S.histTab==='months'?'active':''}" onclick="setHistTab('months')">📅 Months</button>
+        <button class="hist-tab ${S.histTab==='categories'?'active':''}" onclick="setHistTab('categories')">🏷 Categories</button>
+      </div>`;
+
+      if(S.histTab==='categories'){
+        renderCatView(topBar, tabs); return;
+      }
+
+      // ── Months view ──
       const byMonth={};
       txs.forEach(t=>{
         const d=new Date(t.date),k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
@@ -720,24 +794,17 @@
         byMonth[k].push(t);
       });
       const monthKeys=Object.keys(byMonth).sort((a,b)=>b.localeCompare(a));
-
-      // Max expense for bar scaling
       const monthExpenses=monthKeys.map(k=>byMonth[k].filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0));
       const maxExp=Math.max(...monthExpenses,1);
-
-      const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
-
-      // Group by year
       const byYear={};
       monthKeys.forEach(k=>{const y=k.slice(0,4);if(!byYear[y])byYear[y]=[];byYear[y].push(k);});
 
-      let html='<div class="top-bar fu"><div class="logo"><span class="c">Cash</span><span class="f">Flow</span></div></div>';
-      html+='<div class="fu d1">';
+      let html=`${topBar}${tabs}<div class="fu d1">`;
 
       Object.keys(byYear).sort((a,b)=>b-a).forEach(year=>{
         html+=`<div class="hist-year">${year}</div>`;
         byYear[year].forEach(mk=>{
-          const [y,mo]=mk.split('-');
+          const [,mo]=mk.split('-');
           const mName=MONTH_NAMES[+mo-1];
           const mTxs=byMonth[mk].sort((a,b)=>new Date(b.date)-new Date(a.date));
           const mInc=mTxs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
@@ -746,47 +813,48 @@
           const barPct=Math.round((mExp/maxExp)*100);
           const isOpen=!!S.openMonths[mk];
 
-          // Category breakdown
           const catTotals={};
           mTxs.filter(t=>t.type==='expense').forEach(t=>{catTotals[t.category]=(catTotals[t.category]||0)+t.amount;});
-          const maxCat=Math.max(...Object.values(catTotals),1);
-          const catRows=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([cat,amt])=>{
+          const catEntries=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
+          const maxCat=catEntries.length?Math.max(...catEntries.map(e=>e[1]),1):1;
+          const catRows=catEntries.map(([cat,amt])=>{
             const pct=Math.round((amt/maxCat)*100);
-            const catColor=cat==='Income'?'var(--accent)':'rgba(251,113,133,0.7)';
-            return `<div class="mcat-row">
+            return `<div class="mcat-row" onclick="openCatDetail('${es(cat)}')" style="cursor:pointer">
               <div class="mcat-icon">${catEmoji(cat,'expense')}</div>
               <div class="mcat-info">
                 <div style="display:flex;justify-content:space-between;align-items:center">
                   <span class="mcat-name">${es(cat)}</span>
                   <span class="mcat-cnt">${mTxs.filter(t=>t.category===cat&&t.type==='expense').length} tx</span>
                 </div>
-                <div class="mcat-track"><div class="mcat-fill" style="width:${pct}%;background:${catColor}"></div></div>
+                <div class="mcat-track"><div class="mcat-fill" style="width:${pct}%;background:rgba(251,113,133,0.7)"></div></div>
               </div>
-              <div class="mcat-amt" style="color:var(--red)">${fc(amt)}</div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="mcat-amt" style="color:var(--red)">${fc(amt)}</div>
+                <span style="font-size:10px;color:var(--text-muted)">›</span>
+              </div>
             </div>`;
           }).join('');
 
-          // Transaction list inside month
           const txRows=mTxs.map(t=>{
             const ii=t.type==='income';
             return `<div class="mtx">
               <div class="mtx-icon ${ii?'ig':'ir'}">${catEmoji(t.category,t.type)}</div>
               <div class="mtx-info">
                 <div class="mtx-title">${es(t.title)}</div>
-                <div class="mtx-meta">${ft(t.date)} · ${es(t.category)}</div>
+                <div class="mtx-meta">${fd(t.date)} · ${ft(t.date)} · ${es(t.category)}</div>
               </div>
               <div class="mtx-amt ${ii?'g':'r'}">${ii?'+':'−'}${fc(Math.abs(t.amount))}</div>
             </div>`;
           }).join('');
 
-          html+=`<div class="glass month-card ${isOpen?'open':''}" onclick="toggleMonth('${mk}')">
-            <div class="month-head">
+          html+=`<div class="glass month-card ${isOpen?'open':''}" id="mc-${mk}">
+            <div class="month-head" onclick="toggleMonth('${mk}')">
               <div class="mh-left">
                 <div class="mh-name">${mName}</div>
                 <div class="mh-count">${mTxs.length} transaction${mTxs.length!==1?'s':''}</div>
               </div>
               <div class="mh-mid">
-                <div class="mh-bar-track"><div class="mh-bar-fill" style="width:${isOpen?barPct:0}%"></div></div>
+                <div class="mh-bar-track"><div class="mh-bar-fill" data-pct="${barPct}" style="width:${isOpen?barPct:0}%"></div></div>
                 <div class="mh-bar-sub"><span>${fc(mExp)} spent</span></div>
               </div>
               <div class="mh-right">
@@ -794,7 +862,7 @@
               </div>
               <span class="mh-chevron">▼</span>
             </div>
-            <div class="month-body ${isOpen?'open':''}">
+            <div class="month-body ${isOpen?'open':''}" onclick="event.stopPropagation()">
               <div class="month-inner">
                 <div class="month-stats">
                   <div class="ms-pill"><div class="ms-l">Income</div><div class="ms-v" style="color:var(--accent-soft)">${fc(mInc)}</div></div>
@@ -811,13 +879,130 @@
       });
       html+='</div>';
       app.innerHTML=html;
-      // Animate bars after render
       requestAnimationFrame(()=>{
-        document.querySelectorAll('.mh-bar-fill').forEach((el,i)=>{
-          if(S.openMonths[monthKeys[i]])el.style.width=barPct+'%';
+        document.querySelectorAll('.mh-bar-fill[data-pct]').forEach(el=>{
+          el.style.width=el.dataset.pct+'%';
         });
       });
     }
+
+    // ── Category overview (all-time) ──
+    function renderCatView(topBar, tabs){
+      const txs=S.transactions;
+
+      // Build all expense categories across all time
+      const expMap={}, incMap={};
+      txs.forEach(t=>{
+        if(t.type==='expense'){ expMap[t.category]=(expMap[t.category]||{total:0,count:0}); expMap[t.category].total+=t.amount; expMap[t.category].count++; }
+        else { incMap[t.category]=(incMap[t.category]||{total:0,count:0}); incMap[t.category].total+=t.amount; incMap[t.category].count++; }
+      });
+
+      const expEntries=Object.entries(expMap).sort((a,b)=>b[1].total-a[1].total);
+      const incEntries=Object.entries(incMap).sort((a,b)=>b[1].total-a[1].total);
+      const maxExp=expEntries.length?expEntries[0][1].total:1;
+      const maxInc=incEntries.length?incEntries[0][1].total:1;
+
+      const mkCard=(cat,{total,count},isInc,max)=>`
+        <div class="glass cat-view-card" onclick="openCatDetail('${es(cat)}')">
+          <div class="cat-view-icon ${isInc?'inc-bg':'exp-bg'}">${catEmoji(cat,isInc?'income':'expense')}</div>
+          <div class="cat-view-info">
+            <div class="cat-view-name">${es(cat)}</div>
+            <div class="cat-view-bar-wrap">
+              <div class="cat-view-track"><div class="cat-view-fill" data-w="${Math.round((total/max)*100)}" style="width:0%;background:${isInc?'var(--accent)':'var(--red)'}"></div></div>
+              <span class="cat-view-count">${count} tx</span>
+            </div>
+          </div>
+          <div class="cat-view-right">
+            <div class="cat-view-amt" style="color:${isInc?'var(--accent-soft)':'var(--red)'}">${fc(total)}</div>
+            <div class="cat-view-chevron">›</div>
+          </div>
+        </div>`;
+
+      let html=`${topBar}${tabs}<div class="fu d1">`;
+      if(expEntries.length){
+        html+=`<div class="hist-section-label">Expense Categories</div><div class="cat-grid-view">`;
+        html+=expEntries.map(([c,d])=>mkCard(c,d,false,maxExp)).join('');
+        html+=`</div>`;
+      }
+      if(incEntries.length){
+        html+=`<div class="hist-section-label">Income Categories</div><div class="cat-grid-view">`;
+        html+=incEntries.map(([c,d])=>mkCard(c,d,true,maxInc)).join('');
+        html+=`</div>`;
+      }
+      html+='</div>';
+      app.innerHTML=html;
+      requestAnimationFrame(()=>{
+        document.querySelectorAll('.cat-view-fill[data-w]').forEach(el=>{
+          el.style.width=el.dataset.w+'%';
+        });
+      });
+    }
+
+    // ── Category detail ──
+    function renderCatDetail(){
+      const cat=S.catDetailName;
+      const txs=S.transactions.filter(t=>t.category===cat).sort((a,b)=>new Date(b.date)-new Date(a.date));
+      const isInc=txs.length?txs[0].type==='income':false;
+      // check if it's mixed (income + expense with same cat name — unlikely but safe)
+      const totalInc=txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+      const totalExp=txs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+      const dominantType=totalInc>=totalExp?'income':'expense';
+      const mainTotal=dominantType==='income'?totalInc:totalExp;
+      const color=dominantType==='income'?'var(--accent-soft)':'var(--red)';
+
+      const txRows=txs.map(t=>{
+        const ii=t.type==='income';
+        return `<div class="glass tc" style="margin-bottom:8px">
+          <div class="tt">
+            <div class="tl">
+              <div class="ti2 ${ii?'ig':'ir'}">${catEmoji(t.category,t.type)}</div>
+              <div class="tif">
+                <div class="tit">${es(t.title)}</div>
+                <div class="tm"><span class="ttime">${fd(t.date)} · ${ft(t.date)}</span></div>
+              </div>
+            </div>
+            <div class="tr2"><div class="tam ${ii?'g':'r'}">${ii?'+':'−'}${fc(Math.abs(t.amount))}</div></div>
+          </div>
+          ${t.description?`<div class="tde">${es(t.description)}</div>`:''}
+        </div>`;
+      }).join('');
+
+      // Group by month for the mini chart
+      const byMonth={};
+      txs.forEach(t=>{
+        const d=new Date(t.date),k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        if(!byMonth[k])byMonth[k]=0;
+        byMonth[k]+=t.amount;
+      });
+
+      app.innerHTML=`
+        <div class="fh fu">
+          <button class="bb" onclick="closeCatDetail()">← Back</button>
+          <div class="ftit" style="color:${color}">${catEmoji(cat,dominantType)} ${es(cat)}</div>
+        </div>
+        <div class="glass cat-detail-hero fu d1">
+          <div class="cat-detail-stats">
+            <div class="cat-detail-stat">
+              <div class="cdsl">Transactions</div>
+              <div class="cdsv" style="color:var(--text)">${txs.length}</div>
+            </div>
+            <div class="cat-detail-stat">
+              <div class="cdsl">Total</div>
+              <div class="cdsv" style="color:${color}">${fc(mainTotal)}</div>
+            </div>
+            <div class="cat-detail-stat">
+              <div class="cdsl">Average</div>
+              <div class="cdsv" style="color:var(--text-sub)">${fc(mainTotal/txs.length)}</div>
+            </div>
+          </div>
+        </div>
+        <div class="hist-section-label fu d2">All Transactions</div>
+        <div class="fu d2">${txRows||'<div class="es"><div class="ei">🕳</div>No transactions found.</div>'}</div>`;
+    }
+
+    window.setHistTab=tab=>{S.histTab=tab;S.catDetailName=null;render();};
+    window.openCatDetail=cat=>{S.catDetailName=cat;render();};
+    window.closeCatDetail=()=>{S.catDetailName=null;render();};
 
     function renderHome(){
       const txs=S.transactions;
@@ -905,7 +1090,7 @@
 
     function renderSet(){
       const tc=S.transactions.length,ic2=S.transactions.filter(t=>t.type==='income').length,ec=tc-ic2;
-      const cc=DC.length+S.customCategories.length;
+      const cc=DC_OBJ.length+S.customCategories.length;
       const ds=new Blob([JSON.stringify(ld())]).size;
       const dsS=ds>1024?(ds/1024).toFixed(1)+' KB':ds+' B';
       const old=tc?fd([...S.transactions].sort((a,b)=>new Date(a.date)-new Date(b.date))[0].date):'—';
@@ -926,7 +1111,7 @@
         </div>`;
 
       app.innerHTML=`
-        <div class="fh fu"><button class="bb" onclick="gH()">← Back</button><div class="ftit g">Settings</div></div>
+        <div class="top-bar fu"><div class="logo"><span class="c">Cash</span><span class="f">Flow</span></div></div>
         <div class="fu d1">
 
           <div class="ss"><div class="ssl">Appearance</div><div class="glass ssc">
@@ -1057,7 +1242,22 @@
       toast(`Added "${name}"`);
     };
     window.tgl=()=>{S.so=!S.so;if(!S.so)S.sq='';render();};
-    window.oSr=v=>{S.sq=v;render();};
+    let _srTimer=null;
+    window.oSr=v=>{
+      S.sq=v;
+      clearTimeout(_srTimer);
+      // Update the input value visually immediately, but debounce the full re-render
+      _srTimer=setTimeout(()=>render(),400);
+    };
+    window.gH=()=>{S.view='home'; S.editingId=null; S.catDetailName=null; render();};
+    window.oHist=()=>{S.view='history'; render();};
+    window.oSet=()=>{S.view='settings'; S.catDetailName=null; render();};
+    window.oCats=()=>{S.view='categories'; render();};
+    window.toggleMonth=mk=>{S.openMonths[mk]=!S.openMonths[mk];render();};
+    window.sC=c=>{S.form.category=c;render();};
+    window.sN=()=>{const n=nw();S.form.date=n.date;S.form.time=n.time;render();};
+    window.pTS=v=>{S.form.title=v;S.tso=false;render();};
+    window.pCS=v=>{S.form.customCat=v;S.cso=false;render();};
     window.oAdd=t=>{
       S.view='add'; S.txType=t; S.editingId=null;
       const n=nw(); S.form={title:'',amount:'',category:'',customCat:'',description:'',date:n.date,time:n.time};
@@ -1125,26 +1325,20 @@
     window.cCl=()=>{const d=document.createElement('div');d.innerHTML=`<div class="mo" onclick="if(event.target===this)this.parentElement.remove()"><div class="mb"><h3>🗑 Delete All Data?</h3><p>This will permanently remove all ${S.transactions.length} transactions and custom categories.</p><div class="ma"><button class="sbb s" onclick="this.closest('.mo').parentElement.remove()">Cancel</button><button class="sbb d" onclick="clAll()">Delete Everything</button></div></div></div>`;document.body.appendChild(d);};
     window.clAll=()=>{S.transactions=[];S.customCategories=[];sv({transactions:[],customCategories:[]});document.querySelector('.mo')?.parentElement?.remove();toast('All data deleted');render();};
 
-    // ── App Preferences ──
+    // ── App Preferences must be loaded before render ──
     const AP_KEY='cashflow_prefs';
     function ldAP(){try{const r=localStorage.getItem(AP_KEY);if(r)return JSON.parse(r);}catch(e){}return{theme:'dark',pin:null};}
     function svAP(){localStorage.setItem(AP_KEY,JSON.stringify(AP));}
     let AP=ldAP();
 
-    // Apply theme on boot
+    // Apply theme before first render
     function applyTheme(){
       document.body.classList.toggle('light',AP.theme==='light');
     }
     applyTheme();
 
-    window.toggleTheme=checked=>{
-      AP.theme=checked?'light':'dark';
-      svAP(); applyTheme();
-      // Re-render settings to update label
-      renderSet();
-    };
+    window.toggleTheme=checked=>{ AP.theme=checked?'light':'dark'; svAP(); applyTheme(); renderSet(); };
 
-    // ── PIN Lock Screen ──
     function showPINLock(onSuccess){
       let entered='';
       const screen=document.createElement('div');
@@ -1194,7 +1388,12 @@
     let pinSetupBuf='', pinSetupStep=1, pinSetupFirst='';
 
     window.startSetPIN=()=>{ pinSetupBuf=''; pinSetupStep=1; pinSetupFirst=''; renderPINSetup(); };
-    window.startChangePIN=()=>{ pinSetupBuf=''; pinSetupStep=1; pinSetupFirst=''; renderPINSetup(); };
+    window.startChangePIN=()=>{
+      // Verify existing PIN before allowing change
+      showPINLock(()=>{
+        pinSetupBuf=''; pinSetupStep=1; pinSetupFirst=''; renderPINSetup();
+      });
+    };
 
     function renderPINSetup(){
       const area=document.getElementById('pin-inline'); if(!area) return;
@@ -1245,8 +1444,6 @@
       });
     };
 
-    render();
-
     // ── Data safety banner (shown once ever) ──
     const SAFE_KEY = 'cashflow_safe_seen';
     function showSafeBanner() {
@@ -1274,12 +1471,13 @@
       const b = document.querySelector('.dsafe-banner');
       if (b) { b.style.transition = 'opacity 0.3s, transform 0.3s'; b.style.opacity = '0'; b.style.transform = 'translateY(-100%)'; setTimeout(() => b.remove(), 320); }
     };
-    // Small delay so the app renders first
-    setTimeout(showSafeBanner, 800);
 
-    // Check PIN on boot
+    // ── Boot sequence — PIN first, then render, then safe banner ──
     if(AP.pin){
-      showPINLock(()=>{ /* unlocked, app already rendered */ });
+      showPINLock(()=>{ render(); setTimeout(showSafeBanner, 800); });
+    } else {
+      render();
+      setTimeout(showSafeBanner, 800);
     }
 
     // PWA
